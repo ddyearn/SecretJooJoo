@@ -63,9 +63,9 @@ def get_daily_price(code, start_date=None, end_date=None):
     else:
         print(f"ValueError: Code({code}) doesn't exist.")
 
-    df = pd.read_excel(io='./daily_price_data.xlsx', 
+    df = pd.read_excel(io='./daily_price_data.xlsx',
                 sheet_name='Sheet2',
-                usecols=f'A, {colc}', 
+                usecols=f'A, {colc}',
                 index_col = 0,
                 skiprows=13)
     
@@ -142,62 +142,108 @@ port_weights = []
 # 샤프지수 추가
 shape_ratio = []
 
-for i in range(200000):
-    # 2. 랜덤 숫자 4개 생성 - 랜덤숫자 4개의 합 = 1이되도록 생성
-    weights = np.random.random(len(assets))
-    weights /= np.sum(weights)
+kospi200 = []
+snp500 = []
+n225 = []
+ktb = []
+sthy = []
+g = []
+usdx = []
+usd = []
+mmf = []
 
-    if weight_const(weights) == False:
-        continue
-    
-    # 3. 랜덤 생성된 종목뵹 비중 배열과 종목별 연간 수익률을 곱해 포트폴리오의 전체 수익률(returns)를 구한다.
-    returns = np.dot(weights, annual_ret)
+def ef():
+    for i in range(200000):
+        # 2. 랜덤 숫자 4개 생성 - 랜덤숫자 4개의 합 = 1이되도록 생성
+        weights = np.random.random(len(assets))
+        weights /= np.sum(weights)
 
-    # 4. 종목별 연간공분산과 종목별 비중배열 곱하고, 다시 종목별 비중의 전치로 곱한다.
-    # 결과값의 제곱근을 sqrt()함수로 구하면 해당 포트폴리오 전체 risk가 구해진다. 
-    risk = np.sqrt(np.dot(weights.T, np.dot(annual_cov, weights)))
+        if weight_const(weights) == False:
+            continue
+        
+        # 3. 랜덤 생성된 종목뵹 비중 배열과 종목별 연간 수익률을 곱해 포트폴리오의 전체 수익률(returns)를 구한다.
+        returns = np.dot(weights, annual_ret)
 
-    # 5. 200,000개 포트폴리오의 수익률, 리스크, 종목별 비중을 각각 리스트에 추가한다.
-    port_ret.append(returns)
-    port_risk.append(risk)
-    port_weights.append(weights)
-    shape_ratio.append(returns/risk)
+        # 4. 종목별 연간공분산과 종목별 비중배열 곱하고, 다시 종목별 비중의 전치로 곱한다.
+        # 결과값의 제곱근을 sqrt()함수로 구하면 해당 포트폴리오 전체 risk가 구해진다. 
+        risk = np.sqrt(np.dot(weights.T, np.dot(annual_cov, weights)))
 
-# 포트폴리오 결과에 샤프지수 추가
-portfolio = {'Returns' : port_ret, 'Risk' : port_risk, 'Shape' : shape_ratio}
-for j, s in enumerate(assets):
-    # 6. portfolio 9종목의 가중치 weights를 1개씩 가져온다.
-    portfolio[s] = [weight[j] for weight in port_weights]
+        # 5. 200,000개 포트폴리오의 수익률, 리스크, 종목별 비중을 각각 리스트에 추가한다.
+        port_ret.append(returns)
+        port_risk.append(risk)
+        port_weights.append(weights)
+        shape_ratio.append(returns/risk)
 
-# 7. 최종 df는 9종목의 보유 비중에 따른 risk와 예상 수익률을 확인할 수 있다.
-df = pd.DataFrame(portfolio)
-df = df[['Returns', 'Risk', 'Shape'] + [s for s in assets]]
+    # 포트폴리오 결과에 샤프지수 추가
+    portfolio = {'Returns' : port_ret, 'Risk' : port_risk, 'Shape' : shape_ratio}
+    for j, s in enumerate(assets):
+        # 6. portfolio 9종목의 가중치 weights를 1개씩 가져온다.
+        portfolio[s] = [weight[j] for weight in port_weights]
 
-# print(df)
+    # 7. 최종 df는 9종목의 보유 비중에 따른 risk와 예상 수익률을 확인할 수 있다.
+    df = pd.DataFrame(portfolio)
+    df = df[['Returns', 'Risk', 'Shape'] + [s for s in assets]]
 
-# 8. 샤프지수로 위험단위당 예측 수익률이 가장 높은 포트폴리오 구하기
-# 샤프지수 칼럼에서 가장 높은 샤프지수 구하기
-max_shape = df.loc[df['Shape'] == df['Shape'].max()]
+    # print(df)
 
-# 리스크칼럼에서 가장 낮은 리스크 구하기
-min_risk = df.loc[df['Risk'] == df['Risk'].min()]
+    # 8. 샤프지수로 위험단위당 예측 수익률이 가장 높은 포트폴리오 구하기
+    # 샤프지수 칼럼에서 가장 높은 샤프지수 구하기
+    max_shape = df.loc[df['Shape'] == df['Shape'].max()]
 
-max_return = df.loc[df['Returns'] == df['Returns'].max()]
+    # 리스크칼럼에서 가장 낮은 리스크 구하기
+    min_risk = df.loc[df['Risk'] == df['Risk'].min()]
+
+    kospi200.append(min_risk['A069500'].values)
+    snp500.append(min_risk['A143850'].values)
+    n225.append(min_risk['A238720'].values)
+    ktb.append(min_risk['A148070'].values)
+    sthy.append(min_risk['A182490'].values)
+    g.append(min_risk['A132030'].values)
+    usdx.append(min_risk['A139660'].values)
+    usd.append(min_risk['A138230'].values)
+    mmf.append(min_risk['A130730'].values)
+
+# rc = 100
+# for i in range(rc):
+#     ef()
+
+# kospi200_rate = sum(kospi200) / rc
+# snp500_rate = sum(snp500) / rc
+# n225_rate = sum(n225) / rc
+# ktb_rate = sum(ktb) / rc
+# sthy_rate = sum(sthy) / rc
+# g_rate = sum(g) / rc
+# usdx_rate = sum(usdx) / rc
+# usd_rate = sum(usd) / rc
+# mmf_rate = sum(mmf) / rc
+# print(kospi200_rate)
+# print(snp500_rate)
+# print(n225_rate)
+# print(ktb_rate)
+# print(sthy_rate)
+# print(g_rate)
+# print(usdx_rate)
+# print(usd_rate)
+# print(mmf_rate)
+# max_return = df.loc[df['Returns'] == df['Returns'].max()]
 # target_return = df[(df['Returns'] >= 0.055) & (df['Returns'] <= 0.06) & (df['Risk'] <= 0.06)]
 
-print("max_shape")
-print(max_shape)
-print("min_risk")
-print(min_risk)
+# print("max_shape")
+# print(max_shape)
+# print("min_risk")
+# print(min_risk)
+# print(max_shape['A069500'].values)
 # print("max_return")
 # print(max_return)
 # print("target_return")
 # print(target_return)
 
+
+
 # 비중 직접 설정
 print("비중 직접 설정")
 # ['A069500', 'A143850', 'A238720', 'A148070', 'A182490', 'A132030', 'A139660', 'A138230', 'A130730']
-my_weights = [0.1/0.9, 0.1/0.9, 0.1/0.9, 0.1/0.9, 0.1/0.9, 0.1/0.9, 0.1/0.9, 0.1/0.9, 0.1/0.9]
+my_weights = [0.10375375, 0.06658983, 0.03783368, 0.17780594, 0.09489301, 0.07447156, 0.00105201, 0.18866943, 0.25493078]
 my_weights = np.array(my_weights, dtype=np.float64)
 # 3. 랜덤 생성된 종목뵹 비중 배열과 종목별 연간 수익률을 곱해 포트폴리오의 전체 수익률(returns)를 구한다.
 returns = np.dot(my_weights, annual_ret)
@@ -236,13 +282,13 @@ print(returns/risk)
 
 
 # 샤프지수 그래프 그리기
-df.plot.scatter(x='Risk', y='Returns', c='Shape', cmap='viridis', edgecolors='k', figsize=(10,8), grid=True)
-plt.scatter(x=max_shape['Risk'], y=max_shape['Returns'], c='r', marker='X', s=300)
-plt.scatter(x=min_risk['Risk'], y=min_risk['Returns'], c='r', marker='X', s=200)
-plt.title('Portfolio Optimization')
-plt.xlabel('Risk')
-plt.ylabel('Expected Return')
-plt.show()
+# df.plot.scatter(x='Risk', y='Returns', c='Shape', cmap='viridis', edgecolors='k', figsize=(10,8), grid=True)
+# plt.scatter(x=max_shape['Risk'], y=max_shape['Returns'], c='r', marker='X', s=300)
+# plt.scatter(x=min_risk['Risk'], y=min_risk['Returns'], c='r', marker='X', s=200)
+# plt.title('Portfolio Optimization')
+# plt.xlabel('Risk')
+# plt.ylabel('Expected Return')
+# plt.show()
 
 # plt.scatter(df['Risk'], df['Returns'], c=np.array(df['Returns']) / np.array(df['Risk']), marker='.')
 # plt.plot()
